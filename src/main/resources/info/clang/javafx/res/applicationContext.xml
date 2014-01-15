@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cxf="http://cxf.apache.org/core"  
+	xmlns:jaxws="http://cxf.apache.org/jaxws"  
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<bean id="propertyManager" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:info/clang/javafx/res/jdbc.properties</value>
+				<value>classpath:info/clang/javafx/res/smscron.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="quartzTask" class="info.clang.javafx.quartz.DefaultTask">
+	</bean>
+	
+	<bean id="quartz_JobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="quartzTask" />
+		<property name="targetMethod" value="execute" />
+	</bean>
+	
+	<bean id="quartz_CronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="quartz_JobDetail" />
+		<property name="cronExpression" value="${quartz.cronExp}" />
+	</bean>
+	
+	<bean id="startQuartz" lazy-init="false" autowire="no" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="quartz_CronTrigger"/>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename" value="info/clang/javafx/res/i18n/smssettings" />
+	</bean>
+</beans>
